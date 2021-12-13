@@ -8,6 +8,10 @@ db_uri = "postgres://rgoiqssclvlyow:fdab72146a11bcff18e603f4f63a757f8f0d7777adf3
 
 @app.route('/')
 def index():
+    db = connect(db_uri)
+    cursor = db.cursor()
+
+    db.close()
     return render_template('index.html')
 
 
