@@ -1,6 +1,6 @@
 from psycopg2 import connect
 
-URI = "postgres://rgoiqssclvlyow:fdab72146a11bcff18e603f4f63a757f8f0d7777adf364cd8d1f3cbe0f972824@ec2-3-217-216-13.compute-1.amazonaws.com:5432/d822skk2e33c93"
+URI = "postgres://fpuzyjbfomdapy:4366c003257264a984008affe1f706df034418bb08a8b95aeb96e5947d507d6f@ec2-34-205-209-14.compute-1.amazonaws.com:5432/db3gkh6jqmtthb"
 
 
 # DATABASE_URL = os.environ.get(URI)
@@ -41,6 +41,7 @@ cur.execute(''' create table user_data
                     dob date,
                     bank_acc_no int,
                     age int,
+                    total_cash real,
                     unique_id int references users(unique_id) ON DELETE CASCADE
                 ); ''')
 
