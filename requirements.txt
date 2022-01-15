@@ -11,3 +11,4 @@ SQLAlchemy==1.4.28
 Werkzeug==2.0.2
 WTForms==3.0.0
 psycopg2-binary
+Flask-Session
