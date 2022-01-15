@@ -144,7 +144,7 @@ def login():
     """Log user in"""
 
     # Forget any user_id
-    session.clear()
+    # session.clear()
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -187,7 +187,7 @@ def logout():
     """Log user out"""
 
     # Forget any user_id
-    session.clear()
+    # session.clear()
 
     # Redirect user to login form
     return redirect("/")
