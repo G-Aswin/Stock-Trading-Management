@@ -27,7 +27,8 @@ def after_request(response):
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-session = Session(app)
+# session = Session(app)
+
 
 
 
@@ -35,9 +36,8 @@ db_uri = "postgres://fpuzyjbfomdapy:4366c003257264a984008affe1f706df034418bb08a8
 db = connect(db_uri)
 db = db.cursor()
 
-os.environ["API_KEY"] = "pk_0759e49f74404315962a70a6c30c8114"
-# if not os.environ.get("API_KEY"):
-#     raise RuntimeError("API_KEY not set")
+if not os.environ.get("API_KEY"):
+    raise RuntimeError("API_KEY not set")
 
 @app.route('/')
 @login_required
@@ -144,7 +144,7 @@ def login():
     """Log user in"""
 
     # Forget any user_id
-    # session.clear()
+    session.clear()
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -187,7 +187,7 @@ def logout():
     """Log user out"""
 
     # Forget any user_id
-    # session.clear()
+    session.clear()
 
     # Redirect user to login form
     return redirect("/")
