@@ -35,8 +35,9 @@ db_uri = "postgres://fpuzyjbfomdapy:4366c003257264a984008affe1f706df034418bb08a8
 db = connect(db_uri)
 db = db.cursor()
 
-if not os.environ.get("API_KEY"):
-    raise RuntimeError("API_KEY not set")
+os.environ["API_KEY"] = "pk_0759e49f74404315962a70a6c30c8114"
+# if not os.environ.get("API_KEY"):
+#     raise RuntimeError("API_KEY not set")
 
 @app.route('/')
 @login_required
