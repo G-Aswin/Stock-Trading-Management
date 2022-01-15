@@ -15,11 +15,11 @@ cur = con.cursor()
 
 # print(cur.fetchall())
 
-cur.execute(''' drop table portfolio; ''')
-cur.execute(''' drop table stock_transactions; ''')
-cur.execute(''' drop table bank_transaction; ''')
-cur.execute(''' drop table user_data; ''')
-cur.execute(''' drop table users; ''')
+# cur.execute(''' drop table portfolio; ''')
+# cur.execute(''' drop table stock_transactions; ''')
+# cur.execute(''' drop table bank_transaction; ''')
+# cur.execute(''' drop table user_data; ''')
+# cur.execute(''' drop table users; ''')
 
 
 cur.execute(''' create table users

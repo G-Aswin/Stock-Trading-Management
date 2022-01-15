@@ -31,8 +31,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 
 
-
-db_uri = "postgres://rgoiqssclvlyow:fdab72146a11bcff18e603f4f63a757f8f0d7777adf364cd8d1f3cbe0f972824@ec2-3-217-216-13.compute-1.amazonaws.com:5432/d822skk2e33c93"
+db_uri = "postgres://fpuzyjbfomdapy:4366c003257264a984008affe1f706df034418bb08a8b95aeb96e5947d507d6f@ec2-34-205-209-14.compute-1.amazonaws.com:5432/db3gkh6jqmtthb"
 db = connect(db_uri)
 db = db.cursor()
 
