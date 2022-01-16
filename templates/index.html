@@ -18,8 +18,8 @@
                 <tr>
                     <td>{{ stock['stock'].upper() }}</td>
                     <td>{{ stock['quantity'] }}</td>
-                    <td>{{ usd(stock['price']) }}</td>
-                    <td>{{ usd(stock['total']) }}</td>
+                    <td>${{ stock['price'] }}</td>
+                    <td>${{ stock['total'] }}</td>
                     <td>
                         <button class="btn btn-default" value="{{ stock['stock'] }}" data-action="buy">Buy</button>
                         <button class="btn btn-default" value="{{ stock['stock'] }}" data-action="sell">Sell</button>
@@ -30,14 +30,14 @@
                 <td>CASH</td>
                 <td></td>
                 <td></td>
-                <td>{{ usd(cash) }}</td>
+                <td>${{ cash }}</td>
                 <td></td>
             </tr>
             <tr>
                 <td><strong>TOTAL</strong></td>
                 <td></td>
                 <td></td>
-                <td>{{ usd(total) }}</td>
+                <td>${{ total }}</td>
                 <td></td>
             </tr>
         </table>

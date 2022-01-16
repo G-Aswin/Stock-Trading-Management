@@ -15,18 +15,18 @@ cur = con.cursor()
 
 # print(cur.fetchall())
 
-# cur.execute(''' drop table portfolio; ''')
-# cur.execute(''' drop table stock_transactions; ''')
-# cur.execute(''' drop table bank_transaction; ''')
-# cur.execute(''' drop table user_data; ''')
-# cur.execute(''' drop table users; ''')
+cur.execute(''' drop table portfolio; ''')
+cur.execute(''' drop table stock_transactions; ''')
+cur.execute(''' drop table bank_transaction; ''')
+cur.execute(''' drop table user_data; ''')
+cur.execute(''' drop table users; ''')
 
 
 cur.execute(''' create table users
                 (
                     unique_id serial primary key,
-                    username varchar(50) NOT NULL,
-                    password_hash varchar UNIQUE
+                    username varchar(50) UNIQUE,
+                    password_hash varchar 
                 ); ''')
 
 
@@ -59,9 +59,9 @@ cur.execute(''' create table bank_transaction
 
 cur.execute(''' create table stock_transactions
                 (
-                    transaction_id int,
+                    transaction_id serial,
                     cost real,
-                    tstamp timestamp,
+                    tstamp timestamp with time zone,
                     symbol varchar(20),
                     units int,
                     unique_id int references users(unique_id),
@@ -79,6 +79,7 @@ cur.execute(''' create table portfolio
                     primary key (stock_symbol)
                 );  ''')
 
+# cur.execute("insert into users(username, password_hash) values('admin', '1234')")
 
 
 con.commit()

@@ -31,8 +31,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 
 db_uri = "postgres://fpuzyjbfomdapy:4366c003257264a984008affe1f706df034418bb08a8b95aeb96e5947d507d6f@ec2-34-205-209-14.compute-1.amazonaws.com:5432/db3gkh6jqmtthb"
-db = connect(db_uri)
-db = db.cursor()
+dbcon = connect(db_uri)
+db = dbcon.cursor()
 
 
 os.environ["API_KEY"] = "pk_0759e49f74404315962a70a6c30c8114"
@@ -100,32 +100,52 @@ def buy():
         cost = int(request.form.get("shares")) * quote['price']
 
         # check if user has enough cash for transaction
-        result = db.execute("SELECT cash FROM users WHERE id=:id", id=session["user_id"])
-        if cost > result[0]["cash"]:
+        totalcash = 0
+        db.execute("SELECT total_cash FROM user_data WHERE unique_id = %s", (session["unique_id"],))
+        for record in db:
+            totalcash = record[0]
+            
+        if cost > totalcash:
             return apology("you do not have enough cash for this transaction")
+        
+        balance = totalcash - cost
 
         # update cash amount in users database
-        db.execute("UPDATE users SET cash=cash-:cost WHERE id=:id", cost=cost, id=session["user_id"]);
-
+        db.execute("UPDATE user_data SET total_cash = %s WHERE unique_id = %s", (balance, session["unique_id"]))
+        dbcon.commit()
+        
+        dt = datetime.datetime.now(datetime.timezone.utc)
         # add transaction to transaction database
-        add_transaction = db.execute("INSERT INTO transactions (user_id, stock, quantity, price, date) VALUES (:user_id, :stock, :quantity, :price, :date)",
-            user_id=session["user_id"], stock=quote["symbol"], quantity=int(request.form.get("shares")), price=quote['price'], date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        add_transaction = db.execute("INSERT INTO stock_transactions (cost, tstamp, symbol, units, unique_id) VALUES (%s, %s, %s, %s, %s)",
+            (quote['price'], dt, request.form.get("stock"), request.form.get("shares"), session["unique_id"]))
+        
+        dbcon.commit()
 
         # pull number of shares of symbol in portfolio
-        curr_portfolio = db.execute("SELECT quantity FROM portfolio WHERE stock=:stock", stock=quote["symbol"])
+        db.execute("SELECT units_holding, average_price FROM portfolio WHERE stock_symbol = %s", (quote["symbol"],))
+        curr_portfolio = None
+        curr_avg = None
+        for record in db:
+            curr_portfolio = record[0]
+            curr_avg = record[1]
 
         # add to portfolio database
         # if symbol is new, add to portfolio
         if not curr_portfolio:
-            db.execute("INSERT INTO portfolio (stock, quantity) VALUES (:stock, :quantity)",
-                stock=quote["symbol"], quantity=int(request.form.get("shares")))
+            db.execute("INSERT INTO portfolio (stock_name, stock_symbol, units_holding, average_price, unique_id) VALUES (%s, %s, %s, %s, %s)",
+                (quote["name"], quote["symbol"], request.form.get("shares"), quote['price'], session["unique_id"]))
+            dbcon.commit()
 
         # if symbol is already in portfolio, update quantity of shares and total
         else:
-            db.execute("UPDATE portfolio SET quantity=quantity+:quantity WHERE stock=:stock",
-                quantity=int(request.form.get("shares")), stock=quote["symbol"]);
+            newavg = (curr_avg*curr_portfolio + request.form.get("shares")*quote['price'])/(request.form.get("shares") + curr_portfolio)
+            newunits = (curr_portfolio + request.form.get("shares"))
+            db.execute("UPDATE portfolio SET units_holding = %s, average_price = %s WHERE stock_symbol = %s and uniqe_id = %s",
+                (newunits, newavg, quote["symbol"], session['unique_id']))
+            dbcon.commit()
 
-        return redirect(url_for("index"))
+        dbcon.commit()
+        return redirect("/")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -159,21 +179,25 @@ def login():
             return apology("must provide password", 403)
 
         # Query database for username
-        db.execute("SELECT unique_id FROM users WHERE username = %s", (request.form.get("username"),))
+        db.execute("SELECT unique_id, password_hash  FROM users WHERE username = %s", (request.form.get("username"),))
         rec_count = 0
         for record in db:
             print(record)
             session["unique_id"] = record[0]
+            session["password_hash"] = record[1]
             print("printing one record")
             rec_count += 1
         
+        entered_password_hash = generate_password_hash(request.form.get("password"))
+        print(session["password_hash"])
+        print(request.form.get("password"))
         
         # Ensure username exists and password is correct
-        if rec_count != 1 or not check_password_hash(rows[0]["password_hash"], request.form.get("password")):
+        if session["password_hash"] != request.form.get("password"):
             return apology("invalid username and/or password", 403)
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = request.form.get("username")
 
         # Redirect user to home page
         return redirect("/")
@@ -242,18 +266,12 @@ def register():
             return apology("password and password confirmation must match")
 
         # hash password
-        hashval = generate_password_hash(request.form.get("password"))
+        # hashval = generate_password_hash(request.form.get("password"))
 
         # add user to database
         db.execute("select unique_id from users where username = %s", (request.form.get("username"),))
-
-        rec_count = 0
-        for record in db:
-            print(record)
-            session["unique_id"] = record[0]
-            rec_count += 1
         # ensure username is unique
-        if rec_count != 0:
+        if db.rowcount != 0:
             return apology("username is already registered")
         
         name = request.form.get("name")
@@ -264,8 +282,16 @@ def register():
         age = request.form.get("age")
         cash = 10000
         
-        db.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (request.form.get("username"), hashval))
+        db.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (request.form.get("username"), request.form.get("password")))
+        print("****************************")
+        # print(db.statusmessage, db.rowcount)
         session["user_id"] = request.form.get("username")
+        
+        db.execute("select * from users")
+        for record in db:
+            print(record)
+            
+        dbcon.commit()
         
         db.execute("select unique_id from users where username = %s", (request.form.get("username"),))
         rec_count = 0
@@ -274,7 +300,7 @@ def register():
             session["unique_id"] = record[0]
             rec_count += 1
         
-        # remember which user has logged in
+        # # remember which user has logged in
 
         db.execute("insert into user_data values (%s, %s, %s, %s, %s, %s, %s, %s)", (name, phone_no, email_id, dob, acc_no, age, cash, session["unique_id"]))
         # redirect user to home page
@@ -289,37 +315,38 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    stocks = db.execute("SELECT distinct(stock) from purchase where user_id = ?", session["user_id"])
+    # stocks = db.execute("SELECT distinct(stock) from purchase where user_id = ?", session["user_id"])
 
-    if request.method == "POST":
-        symbol = request.form.get("symbol")
-        shares = request.form.get("shares")
-        shares = int(shares)
+    # if request.method == "POST":
+    #     symbol = request.form.get("symbol")
+    #     shares = request.form.get("shares")
+    #     shares = int(shares)
 
-        print("Recieved symbol : ", symbol)
-        print("Recieved shares : ", shares)
+    #     print("Recieved symbol : ", symbol)
+    #     print("Recieved shares : ", shares)
 
-        no_of_shares = db.execute("SELECT sum(stock_count) from purchase where user_id = ? and stock = ?", session["user_id"], symbol)
-        no_of_shares = no_of_shares[0]['sum(stock_count)']
-        print(no_of_shares)
+    #     no_of_shares = db.execute("SELECT sum(stock_count) from purchase where user_id = ? and stock = ?", session["user_id"], symbol)
+    #     no_of_shares = no_of_shares[0]['sum(stock_count)']
+    #     print(no_of_shares)
 
-        data_recieved = lookup(symbol)
-        # store the price information of the required stock
-        latest_price = data_recieved["price"]
-        latest_price = float(latest_price)
+    #     data_recieved = lookup(symbol)
+    #     # store the price information of the required stock
+    #     latest_price = data_recieved["price"]
+    #     latest_price = float(latest_price)
 
-        if not symbol:
-            return apology("must provide symbol", 403)
-        if shares > no_of_shares:
-            return apology("The user does not own that many shares of the stock")
+    #     if not symbol:
+    #         return apology("must provide symbol", 403)
+    #     if shares > no_of_shares:
+    #         return apology("The user does not own that many shares of the stock")
         
-        updating = db.execute("UPDATE users set cash = cash + ? where id = ?", shares * latest_price, session["user_id"])
-        shareupdate = db.execute("UPDATE purchase set stock_count = stock_count - ? where user_id = ?", shares, session["user_id"])
-        currentDateTime = datetime.datetime.now()
+    #     updating = db.execute("UPDATE users set cash = cash + ? where id = ?", shares * latest_price, session["user_id"])
+    #     shareupdate = db.execute("UPDATE purchase set stock_count = stock_count - ? where user_id = ?", shares, session["user_id"])
+    #     currentDateTime = datetime.datetime.now()
 
-        insert_history = db.execute("insert into history(id, Symbol, Shares, Price, Transacted) VALUES (?, ?, ?, ?, ?)", 
-                                    session["user_id"], symbol, shares, latest_price, currentDateTime)
-        return redirect("/")
+    #     insert_history = db.execute("insert into history(id, Symbol, Shares, Price, Transacted) VALUES (?, ?, ?, ?, ?)", 
+    #                                 session["user_id"], symbol, shares, latest_price, currentDateTime)
+    #     return redirect("/")
+    stocks = {}
     return render_template("sell.html", stocks=stocks)
 
 
