@@ -51,7 +51,7 @@ def index():
         cash = record[0]
 
     # pull all transactions belonging to user
-    db.execute("SELECT stock_symbol, units_holding FROM portfolio")
+    db.execute("SELECT stock_symbol, units_holding FROM portfolio where unique_id = %s", (session["unique_id"],))
     portfolio = []
     for record in db:
         stock = {}
