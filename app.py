@@ -306,6 +306,7 @@ def register():
         cash = 10000
         
         db.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (request.form.get("username"), request.form.get("password")))
+        dbcon.commit()
         print("****************************")
         # print(db.statusmessage, db.rowcount)
         session["user_id"] = request.form.get("username")
@@ -326,6 +327,7 @@ def register():
         # # remember which user has logged in
 
         db.execute("insert into user_data values (%s, %s, %s, %s, %s, %s, %s, %s)", (name, phone_no, email_id, dob, acc_no, age, cash, session["unique_id"]))
+        dbcon.commit()
         # redirect user to home page
         return redirect("/")
 
