@@ -33,15 +33,17 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="{{ url_for('index') }}"><span class="blue">C</span><span class="red">$</span><span class="yellow">5</span><span class="green">0</span> <span class="red">Finance</span></a>
+                        <a class="navbar-brand" href="{{ url_for('index') }}"><span class="red">RNSIT Stock Exchange</span></a>
                     </div>
                     <div class="collapse navbar-collapse" id="navbar">
-                        {% if session.user_id %}
+                        {% if session.unique_id %}
                             <ul class="nav navbar-nav">
-                                <li><a href="{{ url_for('quote') }}">Quote</a></li>
-                                <li><a href="{{ url_for('buy') }}">Buy</a></li>
-                                <li><a href="{{ url_for('sell') }}">Sell</a></li>
-                                <li><a href="{{ url_for('history') }}">History</a></li>
+                                <li><a href="{{ url_for('quote') }}">Quote Price</a></li>
+                                <li><a href="{{ url_for('buy') }}">Buy Shares</a></li>
+                                <li><a href="{{ url_for('sell') }}">Sell Shares</a></li>
+                                <li><a href="{{ url_for('history') }}">Stock Transaction History</a></li>
+                                <li><a href="{{ url_for('bank') }}">Bank</a></li>
+
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="{{ url_for('logout') }}">Log Out</a></li>

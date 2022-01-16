@@ -116,9 +116,8 @@ def buy():
         
         dt = datetime.datetime.now(datetime.timezone.utc)
         # add transaction to transaction database
-        add_transaction = db.execute("INSERT INTO stock_transactions (cost, tstamp, symbol, units, unique_id) VALUES (%s, %s, %s, %s, %s)",
+        db.execute("INSERT INTO stock_transactions (cost, tstamp, symbol, units, unique_id) VALUES (%s, %s, %s, %s, %s)",
             (quote['price'], dt, request.form.get("stock"), request.form.get("shares"), session["unique_id"]))
-        
         dbcon.commit()
 
         # pull number of shares of symbol in portfolio
@@ -151,14 +150,38 @@ def buy():
     else:
         return render_template("buy.html")
 
+
+
+@app.route("/bank")
+@login_required
+def bank():
+    # stock_trans = []
+    # db.execute("SELECT symbol, cost, tstamp, units from stock_transactions where unique_id = %s", (session["unique_id"],))
+    # for record in db:
+    #     currrecord = {"symbol" : record[0], "cost": record[1], "tstamp" : record[2], "units" : record[3]}
+    #     stock_trans.append(currrecord)
+        
+    # print(stock_trans)
+    # if not stock_trans:
+    #     return apology("no transaction found")
+        
+    # return render_template("history.html", stock_trans=stock_trans)
+    return apology("This feature is yet to be finished", "Sorry!")
+
 @app.route("/history")
 @login_required
 def history():
-    user_id = session["user_id"]
-    portfolios = db.execute("SELECT Symbol, Shares, Price, Transacted from history where id = ?", session["user_id"])
-    
-    return render_template("history.html", portfolios=portfolios)
-    return apology("TODO")
+    stock_trans = []
+    db.execute("SELECT symbol, cost, tstamp, units from stock_transactions where unique_id = %s", (session["unique_id"],))
+    for record in db:
+        currrecord = {"symbol" : record[0], "cost": record[1], "tstamp" : record[2], "units" : record[3]}
+        stock_trans.append(currrecord)
+        
+    print(stock_trans)
+    if not stock_trans:
+        return apology("no transaction found")
+        
+    return render_template("history.html", stock_trans=stock_trans)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -315,38 +338,49 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    # stocks = db.execute("SELECT distinct(stock) from purchase where user_id = ?", session["user_id"])
+    stocks = []
+    db.execute("SELECT distinct(stock_symbol) from portfolio where unique_id = %s", (session["unique_id"],))
+    for record in db:
+        stocks.append(record[0])
+    
+    if request.method == "POST":
+        symbol = request.form.get("stock")
+        shares = request.form.get("shares")
+        shares = int(shares)
 
-    # if request.method == "POST":
-    #     symbol = request.form.get("symbol")
-    #     shares = request.form.get("shares")
-    #     shares = int(shares)
+        print("Recieved symbol : ", symbol)
+        print("Recieved shares : ", shares)
 
-    #     print("Recieved symbol : ", symbol)
-    #     print("Recieved shares : ", shares)
+        db.execute("SELECT units_holding from portfolio where unique_id = %s and stock_symbol = %s", (session["unique_id"], symbol))
+        no_of_shares = None
+        for record in db:
+            no_of_shares = record[0]
+            
+        print(no_of_shares)
+        if not symbol:
+            return apology("must provide symbol", 403)
+        if shares > no_of_shares:
+            return apology("The user does not own that many shares of the stock")
 
-    #     no_of_shares = db.execute("SELECT sum(stock_count) from purchase where user_id = ? and stock = ?", session["user_id"], symbol)
-    #     no_of_shares = no_of_shares[0]['sum(stock_count)']
-    #     print(no_of_shares)
+        data_recieved = lookup(symbol)
+        # store the price information of the required stock
+        latest_price = data_recieved["price"]
+        latest_price = float(latest_price)
 
-    #     data_recieved = lookup(symbol)
-    #     # store the price information of the required stock
-    #     latest_price = data_recieved["price"]
-    #     latest_price = float(latest_price)
-
-    #     if not symbol:
-    #         return apology("must provide symbol", 403)
-    #     if shares > no_of_shares:
-    #         return apology("The user does not own that many shares of the stock")
         
-    #     updating = db.execute("UPDATE users set cash = cash + ? where id = ?", shares * latest_price, session["user_id"])
-    #     shareupdate = db.execute("UPDATE purchase set stock_count = stock_count - ? where user_id = ?", shares, session["user_id"])
-    #     currentDateTime = datetime.datetime.now()
+        db.execute("UPDATE user_data set total_cash = total_cash + %s where unique_id = %s", (shares * latest_price, session["unique_id"]))
+        dbcon.commit()
+        
+        db.execute("UPDATE portfolio set units_holding = units_holding - %s where unique_id = %s and stock_symbol = %s", (shares, session["unique_id"], symbol))
+        dbcon.commit()
+        
+        dt = datetime.datetime.now(datetime.timezone.utc)
+        db.execute("INSERT INTO stock_transactions (cost, tstamp, symbol, units, unique_id) VALUES (%s, %s, %s, %s, %s)",
+            (latest_price, dt, symbol, -1*shares, session["unique_id"]))
+        dbcon.commit()
 
-    #     insert_history = db.execute("insert into history(id, Symbol, Shares, Price, Transacted) VALUES (?, ?, ?, ?, ?)", 
-    #                                 session["user_id"], symbol, shares, latest_price, currentDateTime)
-    #     return redirect("/")
-    stocks = {}
+        return redirect("/")
+    
     return render_template("sell.html", stocks=stocks)
 
 

@@ -10,7 +10,7 @@
             <div class="form-group">
                 <select name="stock">
                     {% for stock in stocks %}
-                        <option value="{{ stock['stock'] }}">{{ stock['stock'].upper() }}</option>
+                        <option value="{{ stock }}">{{ stock.upper() }}</option>
                     {% endfor %}
                 </select>
             </div>
