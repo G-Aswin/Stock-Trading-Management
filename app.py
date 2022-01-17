@@ -211,6 +211,8 @@ def login():
         # Query database for username
         db.execute("SELECT unique_id, password_hash  FROM users WHERE username = %s", (request.form.get("username"),))
         rec_count = 0
+        session["unique_id"] = None
+        session["password_hash"] = None
         for record in db:
             print(record)
             session["unique_id"] = record[0]
