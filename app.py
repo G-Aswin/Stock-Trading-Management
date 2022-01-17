@@ -137,8 +137,9 @@ def buy():
 
         # if symbol is already in portfolio, update quantity of shares and total
         else:
-            newavg = (curr_avg*curr_portfolio + request.form.get("shares")*quote['price'])/(request.form.get("shares") + curr_portfolio)
-            newunits = (curr_portfolio + request.form.get("shares"))
+            shares = float(request.form.get("shares"))
+            newavg = (curr_avg*curr_portfolio + shares*quote['price'])/(shares + curr_portfolio)
+            newunits = (curr_portfolio + shares)
             db.execute("UPDATE portfolio SET units_holding = %s, average_price = %s WHERE stock_symbol = %s and uniqe_id = %s",
                 (newunits, newavg, quote["symbol"], session['unique_id']))
             dbcon.commit()
