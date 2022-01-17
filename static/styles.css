@@ -6,6 +6,7 @@
     text-align: center;
 }
 
+
 /* colors for navbar */
 .navbar-default .navbar-brand .blue
 {
@@ -25,7 +26,7 @@
 }
 .table
 {
-        max-width: 600px;
+        max-width: 800px;
         margin: auto;
 }
 

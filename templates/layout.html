@@ -20,10 +20,18 @@
 
     </head>
 
-    <body>
-
+    <body style="background-color:rgb(3, 13, 14);">
+        <style>
+            body {
+              background-image: url('../static/img2.jpeg');
+              background-repeat: no-repeat;
+              background-attachment: fixed;
+              background-size: cover;
+              /* font-size:large; */
+            }
+            </style>
         <div class="container">
-
+            
             <nav class="navbar navbar-default">
                 <div class="container-fluid">
                     <div class="navbar-header">
@@ -33,7 +41,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="{{ url_for('index') }}"><span class="red">RNSIT Stock Exchange</span></a>
+                        <a class="navbar-brand" href="{{ url_for('index') }}"><span class="blue"><b>RNSIT Stock Exchange</b></span></a>
                     </div>
                     <div class="collapse navbar-collapse" id="navbar">
                         {% if session.unique_id %}
@@ -54,6 +62,8 @@
                                 <li><a href="{{ url_for('login') }}">Log In</a></li>
                             </ul>
                         {% endif %}
+                        
+                        
                     </div>
                 </div>
             </nav>
@@ -68,6 +78,8 @@
 
             <main>
                 {% block main %}{% endblock %}
+
+                
             </main>
             
         </div>
