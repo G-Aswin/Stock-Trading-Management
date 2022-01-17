@@ -15,7 +15,7 @@ cur = con.cursor()
 
 # print(cur.fetchall())
 
-cur.execute(''' drop table portfolio; ''')
+# cur.execute(''' drop table portfolio; ''')
 # cur.execute(''' drop table stock_transactions; ''')
 # cur.execute(''' drop table bank_transaction; ''')
 # cur.execute(''' drop table user_data; ''')
@@ -69,17 +69,29 @@ cur.execute(''' drop table portfolio; ''')
 #                 );''')
 
 
-cur.execute(''' create table portfolio
-                (
-                    stock_name varchar(20),
-                    stock_symbol varchar(20),
-                    units_holding int,
-                    average_price real,
-                    unique_id int references users(unique_id),
-                    primary key (stock_symbol)
-                );  ''')
+# cur.execute(''' create table portfolio
+#                 (
+#                     stock_name varchar,
+#                     stock_symbol varchar(20),
+#                     units_holding int,
+#                     average_price real,
+#                     unique_id int references users(unique_id),
+#                     primary key (stock_symbol)
+#                 );  ''')
 
 # cur.execute("insert into users(username, password_hash) values('admin', '1234')")
+
+cur.execute('''CREATE OR REPLACE FUNCTION update_total_cash(offset real, user int)
+  RETURNS TRIGGER 
+  LANGUAGE PLPGSQL
+  AS
+$$
+BEGIN
+    UPDATE user_data SET total_cash = total_cash - offset where unique_id = user
+	RETURN NEW;
+END;
+$$''')
+
 
 
 con.commit()

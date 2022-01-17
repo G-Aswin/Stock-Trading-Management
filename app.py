@@ -121,12 +121,18 @@ def buy():
         dbcon.commit()
 
         # pull number of shares of symbol in portfolio
-        db.execute("SELECT units_holding, average_price FROM portfolio WHERE stock_symbol = %s", (quote["symbol"],))
+        db.execute("SELECT units_holding, average_price FROM portfolio WHERE stock_symbol = %s and unique_id = %s", (quote["symbol"],session["unique_id"]))
         curr_portfolio = None
         curr_avg = None
+        print("******************************")
         for record in db:
             curr_portfolio = record[0]
             curr_avg = record[1]
+            print(record)
+            
+        print("*****************")
+        print(curr_portfolio, curr_avg)
+        print("*****************")
 
         # add to portfolio database
         # if symbol is new, add to portfolio
