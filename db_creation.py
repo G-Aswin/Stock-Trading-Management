@@ -80,19 +80,6 @@ cur.execute(''' create table portfolio
                     primary key (unique_id, stock_symbol)
                 );  ''')
 
-# cur.execute("insert into users(username, password_hash) values('admin', '1234')")
-
-# cur.execute('''CREATE OR REPLACE FUNCTION update_total_cash(offset real, user int)
-#   RETURNS TRIGGER 
-#   LANGUAGE PLPGSQL
-#   AS
-# $$
-# BEGIN
-#     UPDATE user_data SET total_cash = total_cash - offset where unique_id = user
-# 	RETURN NEW;
-# END;
-# $$''')
-
 
 
 con.commit()
