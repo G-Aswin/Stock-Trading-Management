@@ -4,7 +4,7 @@
 DBMS mini project
 Still Under development
 
-* Deployed @ <https://rns-stock-exchange.herokuapp.com/> *
+* Deployed @ <https://rns-stock-exchange.herokuapp.com/> * (not active)
 
 ## Overview
 
